@@ -1,0 +1,960 @@
+{
+	"info": {
+		"_postman_id": "037fd371-229c-4022-bdde-168876ad8398",
+		"name": "TestAPI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8116243"
+	},
+	"item": [
+		{
+			"name": "posts",
+			"item": [
+				{
+					"name": "GET/posts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verify Response status code\r",
+									"pm.test(\"Verify Response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Verify Response is not empty\r",
+									"pm.test(\"Verify Response is not empty\", function () {\r",
+									"    pm.expect(jsonData).to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"// Verify Response has expected values\r",
+									"pm.test(\"Verify Response has expected values\", function () {\r",
+									"    pm.expect(jsonData[0].id).to.equal(\"1\");\r",
+									"    pm.expect(jsonData[1].id).to.equal(\"2\");\r",
+									"    pm.expect(jsonData[0].title).to.equal(\"Post 1\");\r",
+									"    pm.expect(jsonData[1].title).to.equal(\"Post 2\");\r",
+									"    pm.expect(jsonData[0].author).to.equal(\"Author 1\");\r",
+									"    pm.expect(jsonData[1].author).to.equal(\"Author 2\");\r",
+									"});\r",
+									"    \r",
+									"    // Saving all IDs as a JSON string\r",
+									"pm.collectionVariables.set(\"postIds\", JSON.stringify(jsonData.map(post => post.id))); // saving postIds for next request\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"baseUrl\", \"http://localhost:3000\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/posts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /posts/{id}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verify Response status code\r",
+									"pm.test(\"Verify Response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Verify Response is not empty\r",
+									"pm.test(\"Verify Response is not empty\", function () {\r",
+									"    pm.expect(jsonData).to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"//Verify Request with invalid or incorrect id"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Get the array of IDs from environment variables\r",
+									"var postIds = JSON.parse(pm.collectionVariables.get(\"postIds\"));\r",
+									"\r",
+									"if (postIds.length > 0) {\r",
+									"    // Get the first ID and set it for the current request\r",
+									"    var currentPostId = postIds[0];\r",
+									"    pm.environment.set(\"currentPostId\", currentPostId);\r",
+									"} else {\r",
+									"    console.error(\"No ID/s found.\");\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/posts/{{currentPostId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"posts",
+								"{{currentPostId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST/posts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verify Response status code\r",
+									"pm.test(\"Verify Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Verify Response id field exists\r",
+									"pm.test(\"Verify id field exists\", function () {\r",
+									"    pm.expect(jsonData).to.have.property('id');\r",
+									"});\r",
+									"\r",
+									"// Verify id created by post request is new\r",
+									"pm.test(\"Verify new post ID is unique\", function () {\r",
+									"// Get the postIds array from collection variables\r",
+									"var postIds = JSON.parse(pm.collectionVariables.get(\"postIds\"));\r",
+									"// Check that the new post ID is not in the existing postIds array\r",
+									"pm.expect(postIds).to.not.include(jsonData.id);\r",
+									"});\r",
+									"\r",
+									"// Saving Id for next request\r",
+									"    pm.collectionVariables.set(\"id\", (jsonData.id));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/posts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT/posts/{id}",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var id = pm.collectionVariables.get(\"id\");\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verify Response status code\r",
+									"pm.test(\"Verify Response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Verify Response is not empty\r",
+									"pm.test(\"Verify Response is not empty\", function () {\r",
+									"    pm.expect(jsonData).to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"// Verify Response id is same as Expected\r",
+									"pm.test(\"Verify Response has expected ID\", function () {\r",
+									"    // Get the expected ID from the collection variables\r",
+									"    var expectedId = pm.collectionVariables.get(\"id\");\r",
+									"    pm.expect(jsonData.id).to.equal(expectedId);\r",
+									"});\r",
+									"\r",
+									"//  Verify new fields are added from the request\r",
+									"pm.test(\"Verify response contains expected fields\", function () {\r",
+									"    pm.expect(jsonData).to.have.property(\"content\");\r",
+									"    pm.expect(jsonData).to.have.property(\"createdAt\");\r",
+									"    pm.expect(jsonData).to.have.property(\"updatedAt\");\r",
+									"    pm.expect(jsonData).to.have.property(\"tags\");\r",
+									"    pm.expect(jsonData).to.have.property(\"published\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit.\",\r\n    \"createdAt\": \"2024-07-16T08:00:00Z\",\r\n    \"updatedAt\": \"2024-07-16T08:30:00Z\",\r\n    \"tags\": [\"tag1\", \"tag2\", \"tag3\"],\r\n    \"published\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/posts/{{id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"posts",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE/posts/{id}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verify Response status code\r",
+									"pm.test(\"Verify Response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var id = pm.collectionVariables.get(\"id\"); "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/posts/{{id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"posts",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "comments",
+			"item": [
+				{
+					"name": "GET/comments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verify Response status code\r",
+									"pm.test(\"Verify Response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Verify Response Time\r",
+									"pm.test(\"Verify Response time is within an acceptable range for performance\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+									"});\r",
+									"\r",
+									"// Verify Response is not empty\r",
+									"pm.test(\"Verify Response is not empty\", function () {\r",
+									"    pm.expect(jsonData).to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"// Schema validation\r",
+									"pm.test(\"Validate response schema\", function () {\r",
+									"    const schema = {\r",
+									"        \"type\": \"array\",\r",
+									"        \"items\": {\r",
+									"            \"type\": \"object\",\r",
+									"            \"properties\": {\r",
+									"                \"id\": {\r",
+									"                    \"type\": \"string\"\r",
+									"                }\r",
+									"            },\r",
+									"            \"required\": [\"id\"]\r",
+									"        }\r",
+									"    };\r",
+									"    pm.expect(tv4.validate(jsonData, schema)).to.be.true;\r",
+									"});\r",
+									"\r",
+									"    var commentId = jsonData[0].id; \r",
+									"    pm.collectionVariables.set(\"commentId\", commentId); // Set the ID for next request"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/comments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET/comments/{id}",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var commentId = pm.collectionVariables.get(\"commentId\"); // Set the ID as a collection variable"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verify Response Status Code\r",
+									"pm.test(\"Verify Response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Verify Response Time\r",
+									"pm.test(\"Verify Response time is within an acceptable range for performance\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(200); \r",
+									"});\r",
+									"\r",
+									"// Verify Response is not empty\r",
+									"pm.test(\"Verify Response is not empty\", function () {\r",
+									"    pm.expect(jsonData).to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"// Verify Response Data\r",
+									"pm.test(\"Verify Response has expected ID\", function () {\r",
+									"    var expectedId = pm.collectionVariables.get(\"commentId\");\r",
+									"    pm.expect(jsonData.id).to.equal(expectedId);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/comments/{{commentId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"comments",
+								"{{commentId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST/comments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"//  Verify Response Status Code\r",
+									"pm.test(\"Verify Response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Verify Response Time\r",
+									"pm.test(\"Verify Response time is within an acceptable range for performance\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(200); \r",
+									"});\r",
+									"\r",
+									"//  Verify Response is not empty\r",
+									"pm.test(\"Verify Response is not empty\", function () {\r",
+									"    pm.expect(jsonData).to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"// Verify Response id field exists\r",
+									"pm.test(\"Verify id field exists\", function () {\r",
+									"    pm.expect(jsonData).to.have.property('id');\r",
+									"});\r",
+									"\r",
+									"// 8. Verify Response Schema \r",
+									"pm.test(\"Validate response schema\", function () {\r",
+									"    const schema = {\r",
+									"        \"type\": \"object\",\r",
+									"        \"properties\": {\r",
+									"            \"id\": {\r",
+									"                \"type\": \"string\"\r",
+									"            }\r",
+									"        },\r",
+									"        \"required\": [\"id\"]\r",
+									"    };\r",
+									"    pm.expect(tv4.validate(jsonData, schema)).to.be.true;\r",
+									"});\r",
+									"\r",
+									"// Saving Id for next request\r",
+									"    pm.collectionVariables.set(\"cid\", (jsonData.id));\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/comments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT/comments/{id}",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var cid = pm.collectionVariables.get(\"cid\"); "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verify Response status code\r",
+									"pm.test(\"Verify Response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Verify Response is not empty\r",
+									"pm.test(\"Verify Response is not empty\", function () {\r",
+									"    pm.expect(jsonData).to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Verify Response id is same as Expected\r",
+									"pm.test(\"Verify Response has expected ID\", function () {\r",
+									"    var expectedId = pm.collectionVariables.get(\"cid\");\r",
+									"    pm.expect(jsonData.id).to.equal(expectedId);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/comments/{{cid}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"comments",
+								"{{cid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE/comments/{id}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verify Response status code\r",
+									"pm.test(\"Verify Response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var cid = pm.collectionVariables.get(\"cid\"); "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/comments/{{cid}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"comments",
+								"{{cid}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "profile",
+			"item": [
+				{
+					"name": "GET/profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verify Response Status Code\r",
+									"pm.test(\"Verify Response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Verify Response Time\r",
+									"pm.test(\"Verify Response time is within an acceptable range for performance\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+									"});\r",
+									"\r",
+									"// Verify Response Data\r",
+									"pm.test(\"Verify Response has expected name\", function () {\r",
+									"    pm.expect(jsonData.name).to.equal(\"typicode\");\r",
+									"});\r",
+									"\r",
+									"// Verify response is not empty\r",
+									"pm.test(\"Verify Response is not empty\", function () {\r",
+									"    pm.expect(jsonData).to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"// Verify the name is not an empty string\r",
+									"pm.test(\"Verify name is not an empty string\", function () {\r",
+									"    pm.expect(jsonData.name).to.not.equal(\"\");\r",
+									"});\r",
+									"\r",
+									"// Verify the response status is OK\r",
+									"pm.test(\"Verify response status is OK\", function () {\r",
+									"    pm.expect(pm.response.status).to.equal(\"OK\");\r",
+									"});\r",
+									"\r",
+									"// Schema validation \r",
+									"pm.test(\"Validate response schema\", function () {\r",
+									"    const schema = {\r",
+									"        \"type\": \"object\",\r",
+									"        \"properties\": {\r",
+									"            \"name\": {\r",
+									"                \"type\": \"string\"\r",
+									"            }\r",
+									"        },\r",
+									"        \"required\": [\"name\"]\r",
+									"    };\r",
+									"    pm.expect(tv4.validate(jsonData, schema)).to.be.true;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"profile"
+							]
+						},
+						"description": "\nThe `GET` request to `/profile` endpoint retrieves the profile information. The response returned a status code of 200 and a JSON object with a `name` field.\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"name\": {\n      \"type\": \"string\"\n    }\n  }\n}\n```\n"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "posts Copy",
+			"item": [
+				{
+					"name": "GET/posts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract response data\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"// Verify Response status code\r",
+									"pm.test(\"Verify Response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Verify Response is not empty\r",
+									"pm.test(\"Verify Response is not empty\", function () {\r",
+									"    pm.expect(jsonData).to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify Response has expected values\", function () {\r",
+									"    pm.expect(jsonData[0].id).to.equal(\"1\");\r",
+									"    pm.expect(jsonData[1].id).to.equal(\"2\");\r",
+									"    pm.expect(jsonData[0].title).to.equal(\"Post 1\");\r",
+									"    pm.expect(jsonData[1].title).to.equal(\"Post 2\");\r",
+									"    pm.expect(jsonData[0].author).to.equal(\"Author 1\");\r",
+									"    pm.expect(jsonData[1].author).to.equal(\"Author 2\");\r",
+									"});\r",
+									"    \r",
+									"if (jsonData.length > 0) {\r",
+									"    // Store post IDs in collection variables\r",
+									"    var postIds = jsonData.map(post => post.id);\r",
+									"    console.log(\"1. Inside posts: Total posts\");\r",
+									"    console.log(\"2. Inside posts: Setting post IDs\");\r",
+									"\r",
+									"    pm.collectionVariables.set(\"postIds\", JSON.stringify(postIds));\r",
+									"    pm.collectionVariables.set(\"currentIndex\", 0); // Start with the first post ID\r",
+									"\r",
+									"    console.log(\"3. Inside posts: Setting currentIndex to 0\");\r",
+									"\r",
+									"    // Set the next request to the first post ID\r",
+									"    pm.execution.setNextRequest(\"GET /posts/{id}\");\r",
+									"} else {\r",
+									"    pm.test(\"No posts available\", function() {\r",
+									"         console.log(\"4. No posts available\");\r",
+									"        pm.expect(jsonData.length).to.be.above(0);\r",
+									"       \r",
+									"    });\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/posts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /posts/{id}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Verify Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify Response is not empty\", function () {\r",
+									"    pm.expect(jsonData).not.be.empty;\r",
+									"});\r",
+									"\r",
+									"// Check the status and structure of the response\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Id is a string\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.id).to.be.a('string');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 200ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"// Update the currentIndex to move to the next post ID\r",
+									"var currentIndex = pm.collectionVariables.get(\"currentIndex\");\r",
+									"currentIndex++;\r",
+									"pm.collectionVariables.set(\"currentIndex\", currentIndex);\r",
+									"\r",
+									"// Loop to the same request if there are more IDs\r",
+									"var postIds = JSON.parse(pm.collectionVariables.get(\"postIds\"));\r",
+									"if (currentIndex < postIds.length) {\r",
+									"    pm.collectionVariables.set(\"currentPostId\", postIds[currentIndex]);\r",
+									"    pm.execution.setNextRequest(\"GET /posts/{id}\");\r",
+									"    console.log(\"Post-request script: Current Index:\", currentIndex);\r",
+									"   console.log(\"Post-request script: Current Post ID:\", pm.collectionVariables.get(\"currentPostId\"));\r",
+									" \r",
+									"} else {\r",
+									"    console.log(\"Post-request script: All post IDs have been processed. Stopping looop.\");\r",
+									"   pm.execution.setNextRequest(null); // Stop the loop if all IDs have been processed\r",
+									"    \r",
+									"}\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var postIds = JSON.parse(pm.collectionVariables.get(\"postIds\"));\r",
+									"var currentIndex = pm.collectionVariables.get(\"currentIndex\");\r",
+									"\r",
+									"// Set the currentPostId to the current index\r",
+									"if (currentIndex < postIds.length) {\r",
+									"    var currentPostId = postIds[currentIndex];\r",
+									"    pm.collectionVariables.set(\"currentPostId\", currentPostId);\r",
+									"    console.log(\"Pre-request script: Setting currentPostId to\", currentPostId);\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/posts/{{currentPostId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"posts",
+								"{{currentPostId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "firstId",
+			"value": ""
+		},
+		{
+			"key": "postIds",
+			"value": ""
+		},
+		{
+			"key": "currentIndex",
+			"value": ""
+		},
+		{
+			"key": "currentPostId",
+			"value": ""
+		},
+		{
+			"key": "1",
+			"value": ""
+		},
+		{
+			"key": "id",
+			"value": ""
+		},
+		{
+			"key": "commentId",
+			"value": ""
+		},
+		{
+			"key": "jsonData[0].id",
+			"value": ""
+		},
+		{
+			"key": "postId",
+			"value": ""
+		},
+		{
+			"key": "cid",
+			"value": ""
+		}
+	]
+}
